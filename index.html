@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Jardín OS v6.1</title>
+    <title>Jardín OS v6.2</title>
     
     <!-- Meta Tags PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -94,7 +94,7 @@
                             <i class="fas fa-chevron-down text-xs text-slate-400"></i>
                         </button>
                         <div class="flex items-center gap-2 mt-1">
-                            <span id="currentDate" class="text-xs text-slate-500 font-medium capitalize">Cargando...</span>
+                            <span id="currentDate" class="text-xs text-slate-500 font-medium capitalize">Iniciando...</span>
                             <div id="connectionStatus" class="w-2 h-2 rounded-full bg-red-500 animate-pulse" title="Estado de conexión"></div>
                         </div>
                     </div>
@@ -287,35 +287,45 @@
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
         // ==========================================
-        // CONFIGURACIÓN FIREBASE
+        // CONFIGURACIÓN FIREBASE (RESTAURADA)
         // ==========================================
-        // Si usas esto fuera del editor online, descomenta 'manualConfig'
-        // y pon tus claves reales.
-        
-        /* const manualConfig = {
-            apiKey: "TU_API_KEY",
-            authDomain: "TU_PROYECTO.firebaseapp.com",
-            projectId: "TU_PROYECTO",
-            storageBucket: "TU_PROYECTO.firebasestorage.app",
-            messagingSenderId: "TU_SENDER_ID",
-            appId: "TU_APP_ID"
-        }; */
+        // Estas credenciales se extrajeron de tu archivo original para que funcione
+        const manualConfig = {
+            apiKey: "AIzaSyBzPiBCgiHoHSp24U7739fj9-htyTA8KiU",
+            authDomain: "app-jardin-v4.firebaseapp.com",
+            projectId: "app-jardin-v4",
+            storageBucket: "app-jardin-v4.firebasestorage.app",
+            messagingSenderId: "413324369604",
+            appId: "1:413324369604:web:f78e3f459725dd824e3391"
+        };
 
-        // Intento de carga automática o manual
-        let firebaseConfig = {};
+        // Lógica de selección de configuración robusta
+        let firebaseConfig = null;
         try {
-            if (typeof __firebase_config !== 'undefined') {
+            // Intenta usar config inyectada (Preview)
+            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
                 firebaseConfig = JSON.parse(__firebase_config);
-            } else if (typeof manualConfig !== 'undefined') {
+                console.log("Usando Configuración de Preview");
+            } 
+            // Si no hay preview (ej: archivo local), usa manualConfig
+            else if (typeof manualConfig !== 'undefined') {
                 firebaseConfig = manualConfig;
+                console.log("Usando Configuración Manual del Usuario");
             }
-        } catch(e) { console.error("Error config", e); }
+        } catch(e) { console.error("Error seleccionando config", e); }
+
+        // Fallback de emergencia
+        if (!firebaseConfig) {
+            alert("ERROR CRÍTICO: No se encontró configuración de Firebase. La app no funcionará.");
+            throw new Error("No firebase config");
+        }
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const storage = getStorage(app);
         
+        // Usamos tu ID original si no estamos en preview
         const PREVIEW_APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'jardin-os-v5'; 
         
         enableIndexedDbPersistence(db).catch(err => console.log("Persistencia:", err.code));
@@ -438,7 +448,7 @@
                 const basePath = Data.getBranchPath();
                 const sharedPath = Data.getSharedPath();
 
-                // 1. TAREAS (Sin orderBy para evitar errores de índice)
+                // 1. TAREAS
                 State.listeners.tasks = onSnapshot(collection(db, ...basePath, 'tasks'), (snap) => {
                     const list = document.getElementById('taskList');
                     list.innerHTML = '';
@@ -451,7 +461,6 @@
                     const tasks = [];
                     snap.forEach(d => tasks.push({id: d.id, ...d.data()}));
                     
-                    // Ordenamiento JS
                     const pVal = { 'critical': 0, 'high': 1, 'medium': 2, 'low': 3 };
                     tasks.sort((a,b) => {
                         const pA = pVal[a.priority] || 3;
@@ -536,12 +545,10 @@
                 // 4. CHAT (Sin orderBy)
                 State.listeners.chat = onSnapshot(collection(db, ...basePath, 'chat'), (snap) => {
                     const container = document.getElementById('chatList');
-                    // Cargar y ordenar todos para asegurar orden correcto sin índices
                     const msgs = [];
                     snap.forEach(doc => msgs.push({ ...doc.data(), id: doc.id }));
                     msgs.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
 
-                    // Renderizado simple
                     container.innerHTML = '';
                     msgs.forEach(msg => {
                         const isMe = msg.sender === State.user.uid;
@@ -558,7 +565,6 @@
                         container.appendChild(div);
                     });
                     
-                    // Auto-scroll si es el primer load o estaba abajo
                     UI.scrollChat();
                 });
             }
@@ -595,11 +601,12 @@
             document.getElementById('currentDate').innerText = new Date().toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'short'});
             UI.setTheme(State.branch);
 
-            // Verificación de seguridad de config
-            if(!firebaseConfig.apiKey) {
-                alert("FALTA CONFIGURACIÓN FIREBASE:\nEdita el código y descomenta 'manualConfig' con tus credenciales.");
-                return;
-            }
+            // Timeout para detectar si la conexión falla silenciosamente
+            setTimeout(() => {
+                if (!State.user) {
+                    UI.toast("Conectando... (esto tarda la primera vez)", "info");
+                }
+            }, 4000);
 
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -607,7 +614,13 @@
                 } else {
                     await signInAnonymously(auth);
                 }
-            } catch (error) { console.error("Auth", error); UI.toast("Error Auth", "error"); }
+            } catch (error) { 
+                console.error("Auth Error", error); 
+                UI.toast("Error de Autenticación: " + error.message, "error"); 
+                // Fallback visual si falla auth
+                document.getElementById('connectionStatus').classList.remove('bg-red-500', 'animate-pulse');
+                document.getElementById('connectionStatus').classList.add('bg-orange-500');
+            }
 
             onAuthStateChanged(auth, (user) => {
                 const indicator = document.getElementById('connectionStatus');
