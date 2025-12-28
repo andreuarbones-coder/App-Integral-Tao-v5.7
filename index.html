@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Jardín OS v7.0</title>
+    <title>Jardín OS v7.2</title>
     
-    <!-- Meta Tags PWA -->
+    <!-- === MANIFIESTO PWA === -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Jardín OS","short_name":"Jardín OS","start_url":".","display":"standalone","background_color":"#064e3b","theme_color":"#064e3b","description":"Gestión de Vivero","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/1598/1598196.png","sizes":"192x192","type":"image/png"},{"src":"https://cdn-icons-png.flaticon.com/512/1598/1598196.png","sizes":"512x512","type":"image/png"}]}'>
+
+    <!-- Meta Tags PWA iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#064e3b">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1598/1598196.png">
     
     <!-- Librerías Externas -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -82,7 +86,6 @@
             box-shadow: 0 0 20px rgba(239, 68, 68, 0.6) !important;
         }
 
-        /* Estilos para checks de colores en modal */
         .color-radio:checked + div { ring-width: 2px; ring-offset-width: 2px; transform: scale(1.1); }
 
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 100; width: 90%; max-width: 350px; pointer-events: none; }
@@ -123,8 +126,7 @@
                     <span id="deliveryBadge" class="hidden absolute top-0 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border border-white"></span>
                 </button>
                 <button data-view="notes" class="nav-tab flex-1 pb-2 text-center tab-inactive min-w-[70px] transition-all">Notas</button>
-                <!-- Pestaña renombrada a "Proced." para ahorrar espacio -->
-                <button data-view="procedures" class="nav-tab flex-1 pb-2 text-center tab-inactive min-w-[70px] transition-all">Proced.</button>
+                <button data-view="procedures" class="nav-tab flex-1 pb-2 text-center tab-inactive min-w-[70px] transition-all">Procesos</button>
                 <button data-view="stock" class="nav-tab flex-1 pb-2 text-center tab-inactive min-w-[70px] transition-all">Stock</button>
                 <button data-view="chat" class="nav-tab flex-1 pb-2 text-center tab-inactive min-w-[70px] transition-all flex items-center justify-center gap-1">
                     <i class="fas fa-microphone-alt"></i> Radio
@@ -159,15 +161,12 @@
             <div id="notesList" class="grid gap-4"></div>
         </div>
 
-        <!-- Vista: Procedimientos -->
+        <!-- Vista: Procedimientos (COMPARTIDA) -->
         <div id="view-procedures" class="view-section hidden flex-grow h-full overflow-y-auto p-4 pb-24">
-            <div class="mb-4 text-center">
-                <h2 class="text-xl font-bold text-slate-700">Procedimientos y Protocolos</h2>
-                <p class="text-xs text-slate-400">Guías estandarizadas para el equipo</p>
+            <div class="bg-purple-50 text-purple-800 text-xs p-3 rounded-lg mb-4 text-center font-bold border border-purple-100 shadow-sm flex items-center justify-center gap-2">
+                <i class="fas fa-globe"></i> Base de Conocimiento Unificada
             </div>
-            <div id="proceduresList" class="space-y-4">
-                <!-- Se llenará dinámicamente -->
-            </div>
+            <div id="proceduresList" class="space-y-4"></div>
         </div>
 
         <!-- Vista: Stock -->
@@ -285,7 +284,7 @@
             </div>
         </div>
 
-        <!-- Modal Procedimiento (NUEVO) -->
+        <!-- Modal Procedimiento -->
         <div id="modal-procedures" class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden hidden scale-95 transition-transform duration-300">
             <div class="p-5">
                 <h2 class="text-xl font-bold mb-4 flex items-center gap-2" style="color: var(--primary);"><i class="fas fa-book"></i> Nuevo Procedimiento</h2>
@@ -295,26 +294,11 @@
                     <div>
                         <label class="text-xs font-bold text-slate-400 uppercase mb-2 block">Etiqueta de Color</label>
                         <div class="flex justify-between px-2">
-                            <label class="cursor-pointer relative">
-                                <input type="radio" name="procColor" value="blue" class="color-radio sr-only" checked>
-                                <div class="w-8 h-8 rounded-full bg-blue-500 border-2 border-transparent transition-all ring-blue-300"></div>
-                            </label>
-                            <label class="cursor-pointer relative">
-                                <input type="radio" name="procColor" value="green" class="color-radio sr-only">
-                                <div class="w-8 h-8 rounded-full bg-emerald-500 border-2 border-transparent transition-all ring-emerald-300"></div>
-                            </label>
-                            <label class="cursor-pointer relative">
-                                <input type="radio" name="procColor" value="red" class="color-radio sr-only">
-                                <div class="w-8 h-8 rounded-full bg-red-500 border-2 border-transparent transition-all ring-red-300"></div>
-                            </label>
-                            <label class="cursor-pointer relative">
-                                <input type="radio" name="procColor" value="orange" class="color-radio sr-only">
-                                <div class="w-8 h-8 rounded-full bg-orange-400 border-2 border-transparent transition-all ring-orange-200"></div>
-                            </label>
-                            <label class="cursor-pointer relative">
-                                <input type="radio" name="procColor" value="purple" class="color-radio sr-only">
-                                <div class="w-8 h-8 rounded-full bg-purple-500 border-2 border-transparent transition-all ring-purple-300"></div>
-                            </label>
+                            <label class="cursor-pointer relative"><input type="radio" name="procColor" value="blue" class="color-radio sr-only" checked><div class="w-8 h-8 rounded-full bg-blue-500 border-2 border-transparent transition-all ring-blue-300"></div></label>
+                            <label class="cursor-pointer relative"><input type="radio" name="procColor" value="green" class="color-radio sr-only"><div class="w-8 h-8 rounded-full bg-emerald-500 border-2 border-transparent transition-all ring-emerald-300"></div></label>
+                            <label class="cursor-pointer relative"><input type="radio" name="procColor" value="red" class="color-radio sr-only"><div class="w-8 h-8 rounded-full bg-red-500 border-2 border-transparent transition-all ring-red-300"></div></label>
+                            <label class="cursor-pointer relative"><input type="radio" name="procColor" value="orange" class="color-radio sr-only"><div class="w-8 h-8 rounded-full bg-orange-400 border-2 border-transparent transition-all ring-orange-200"></div></label>
+                            <label class="cursor-pointer relative"><input type="radio" name="procColor" value="purple" class="color-radio sr-only"><div class="w-8 h-8 rounded-full bg-purple-500 border-2 border-transparent transition-all ring-purple-300"></div></label>
                         </div>
                     </div>
 
@@ -336,8 +320,8 @@
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, serverTimestamp, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
+        // CONFIG
         const manualConfig = { apiKey: "AIzaSyBzPiBCgiHoHSp24U7739fj9-htyTA8KiU", authDomain: "app-jardin-v4.firebaseapp.com", projectId: "app-jardin-v4", storageBucket: "app-jardin-v4.firebasestorage.app", messagingSenderId: "413324369604", appId: "1:413324369604:web:f78e3f459725dd824e3391" };
-
         let firebaseConfig = null;
         try { if (typeof __firebase_config !== 'undefined' && __firebase_config) firebaseConfig = JSON.parse(__firebase_config); else if (typeof manualConfig !== 'undefined') firebaseConfig = manualConfig; } catch(e) {}
         if (!firebaseConfig) { alert("ERROR CRÍTICO: Configuración Firebase."); throw new Error("No config"); }
@@ -350,27 +334,14 @@
         
         enableIndexedDbPersistence(db).catch(err => console.log("Persistencia:", err.code));
 
-        const State = {
-            user: null,
-            branch: localStorage.getItem('tao_branch') || 'centro',
-            view: 'tasks',
-            wakeLock: null,
-            recording: false,
-            mediaRecorder: null,
-            audioChunks: [],
-            priority: 'low',
-            listeners: {} 
-        };
-
+        const State = { user: null, branch: localStorage.getItem('tao_branch') || 'centro', view: 'tasks', wakeLock: null, recording: false, mediaRecorder: null, audioChunks: [], priority: 'low', listeners: {} };
         const VIEWS_ORDER = ['tasks', 'delivery', 'notes', 'procedures', 'stock', 'chat'];
 
         const UI = {
             toast(msg, type = 'info') {
-                const container = document.getElementById('toast-container');
-                const el = document.createElement('div');
+                const container = document.getElementById('toast-container'); const el = document.createElement('div');
                 const icon = type === 'error' ? '<i class="fas fa-exclamation-circle text-red-400"></i>' : type === 'success' ? '<i class="fas fa-check-circle text-emerald-400"></i>' : '<i class="fas fa-info-circle text-blue-400"></i>';
-                el.className = 'toast'; el.innerHTML = `${icon} <span>${msg}</span>`;
-                container.appendChild(el);
+                el.className = 'toast'; el.innerHTML = `${icon} <span>${msg}</span>`; container.appendChild(el);
                 setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateY(-10px)'; setTimeout(() => el.remove(), 300); }, 3000);
             },
             setTheme(branch) {
@@ -388,21 +359,20 @@
             scrollChat() { const container = document.getElementById('chatList'); if(container) container.scrollTop = container.scrollHeight; },
             openModal(modalId) { const overlay = document.getElementById('modalOverlay'); const modal = document.getElementById(modalId); overlay.classList.remove('hidden'); requestAnimationFrame(() => overlay.classList.remove('opacity-0')); document.querySelectorAll('#modalOverlay > div').forEach(m => m.classList.add('hidden')); modal.classList.remove('hidden'); requestAnimationFrame(() => modal.classList.remove('scale-95')); },
             closeModal() { const overlay = document.getElementById('modalOverlay'); const modals = document.querySelectorAll('#modalOverlay > div'); overlay.classList.add('opacity-0'); modals.forEach(m => m.classList.add('scale-95')); setTimeout(() => { overlay.classList.add('hidden'); modals.forEach(m => m.classList.add('hidden')); }, 300); },
-            showRecordingUI(show) {
-                const overlay = document.getElementById('recordingOverlay');
-                const micBtn = document.getElementById('micBtn');
-                if(show) { overlay.classList.remove('hidden'); micBtn.classList.add('mic-active-btn'); if(navigator.vibrate) navigator.vibrate(50); }
-                else { overlay.classList.add('hidden'); micBtn.classList.remove('mic-active-btn'); if(navigator.vibrate) navigator.vibrate([50, 50, 50]); }
-            }
+            showRecordingUI(show) { const overlay = document.getElementById('recordingOverlay'); const micBtn = document.getElementById('micBtn'); if(show) { overlay.classList.remove('hidden'); micBtn.classList.add('mic-active-btn'); if(navigator.vibrate) navigator.vibrate(50); } else { overlay.classList.add('hidden'); micBtn.classList.remove('mic-active-btn'); if(navigator.vibrate) navigator.vibrate([50, 50, 50]); } }
         };
 
         const Data = {
             getBranchPath() { return ['artifacts', PREVIEW_APP_ID, 'branches', State.branch]; },
-            getSharedPath() { return ['artifacts', PREVIEW_APP_ID, 'repartos_globales']; },
+            // --- GESTOR DE RUTAS COMPARTIDAS ---
+            getSharedPath(type) { 
+                if (type === 'procedures') return ['artifacts', PREVIEW_APP_ID, 'procedimientos_globales'];
+                return ['artifacts', PREVIEW_APP_ID, 'repartos_globales']; // default: deliveries
+            },
 
             subscribeAll() {
                 Object.values(State.listeners).forEach(unsub => unsub && unsub());
-                const basePath = Data.getBranchPath(); const sharedPath = Data.getSharedPath();
+                const basePath = Data.getBranchPath();
 
                 State.listeners.tasks = onSnapshot(collection(db, ...basePath, 'tasks'), (snap) => {
                     const list = document.getElementById('taskList'); list.innerHTML = '';
@@ -418,13 +388,13 @@
                     });
                 });
                 
-                State.listeners.deliveries = onSnapshot(collection(db, ...sharedPath), (snap) => {
+                // Listener Repartos (COMPARTIDO)
+                State.listeners.deliveries = onSnapshot(collection(db, ...Data.getSharedPath('deliveries')), (snap) => {
                     const list = document.getElementById('deliveryList'); list.innerHTML = '';
                     const deliveries = []; snap.forEach(d => deliveries.push({id: d.id, ...d.data()}));
                     deliveries.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
                     const pendingCount = deliveries.filter(d => d.status === 'pending').length;
-                    const badge = document.getElementById('deliveryBadge');
-                    if(pendingCount > 0) { badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
+                    const badge = document.getElementById('deliveryBadge'); if(pendingCount > 0) { badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
                     if(deliveries.length === 0) { list.innerHTML = `<div class="text-center p-8 opacity-40"><i class="fas fa-truck text-4xl mb-2"></i><br>Sin repartos</div>`; return; }
                     deliveries.forEach(d => {
                         const isDelivered = d.status === 'delivered'; const el = document.createElement('div'); el.className = `bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden ${isDelivered ? 'opacity-60 bg-slate-50' : ''}`;
@@ -444,8 +414,8 @@
                     });
                 });
 
-                // Listener de Procedimientos (NUEVO v7.0)
-                State.listeners.procedures = onSnapshot(collection(db, ...basePath, 'procedures'), (snap) => {
+                // Listener de Procedimientos (COMPARTIDO)
+                State.listeners.procedures = onSnapshot(collection(db, ...Data.getSharedPath('procedures')), (snap) => {
                     const list = document.getElementById('proceduresList'); list.innerHTML = '';
                     const procs = []; snap.forEach(d => procs.push({id: d.id, ...d.data()}));
                     procs.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
@@ -453,25 +423,23 @@
                     if(procs.length === 0) { list.innerHTML = `<div class="text-center p-8 opacity-40"><i class="fas fa-book text-4xl mb-2"></i><br>Sin procedimientos</div>`; return; }
 
                     const colors = {
-                        blue: { bg: 'bg-blue-50', border: 'border-blue-200', title: 'text-blue-800', badge: 'bg-blue-100 text-blue-700' },
-                        green: { bg: 'bg-emerald-50', border: 'border-emerald-200', title: 'text-emerald-800', badge: 'bg-emerald-100 text-emerald-700' },
-                        red: { bg: 'bg-red-50', border: 'border-red-200', title: 'text-red-800', badge: 'bg-red-100 text-red-700' },
-                        orange: { bg: 'bg-orange-50', border: 'border-orange-200', title: 'text-orange-800', badge: 'bg-orange-100 text-orange-700' },
-                        purple: { bg: 'bg-purple-50', border: 'border-purple-200', title: 'text-purple-800', badge: 'bg-purple-100 text-purple-700' }
+                        blue: { bg: 'bg-blue-50', border: 'border-blue-200', title: 'text-blue-800' },
+                        green: { bg: 'bg-emerald-50', border: 'border-emerald-200', title: 'text-emerald-800' },
+                        red: { bg: 'bg-red-50', border: 'border-red-200', title: 'text-red-800' },
+                        orange: { bg: 'bg-orange-50', border: 'border-orange-200', title: 'text-orange-800' },
+                        purple: { bg: 'bg-purple-50', border: 'border-purple-200', title: 'text-purple-800' }
                     };
 
                     procs.forEach(p => {
                         const theme = colors[p.color] || colors.blue;
-                        // Transformar texto en items de lista
                         const stepsHtml = p.steps.split('\n').map(s => s.trim()).filter(s => s).map(s => `<li class="flex items-start gap-2 mb-1"><span class="mt-1.5 w-1.5 h-1.5 rounded-full ${theme.title.replace('text','bg')} flex-shrink-0"></span><span>${s.replace(/^- /, '')}</span></li>`).join('');
-                        
                         const el = document.createElement('div');
                         el.className = `${theme.bg} rounded-xl shadow-sm border ${theme.border} p-5 relative`;
                         el.innerHTML = `
                             <h3 class="font-bold text-lg mb-3 ${theme.title} flex items-center gap-2"><i class="fas fa-clipboard-list opacity-50"></i> ${p.title}</h3>
                             <ul class="text-sm text-slate-700 leading-relaxed">${stepsHtml}</ul>
                             <div class="absolute top-4 right-4 flex gap-2">
-                                <button onclick="window.delItem('procedures','${p.id}')" class="w-8 h-8 rounded-full bg-white/50 hover:bg-red-500 hover:text-white text-slate-400 flex items-center justify-center transition-colors"><i class="fas fa-trash-alt text-xs"></i></button>
+                                <button onclick="window.delItem('procedures','${p.id}', true)" class="w-8 h-8 rounded-full bg-white/50 hover:bg-red-500 hover:text-white text-slate-400 flex items-center justify-center transition-colors"><i class="fas fa-trash-alt text-xs"></i></button>
                             </div>
                         `;
                         list.appendChild(el);
@@ -501,9 +469,19 @@
         function getPriorityStyle(p) { const map = { critical: { border: "border-red-500", label: "Urgente" }, high: { border: "border-orange-500", label: "Alta" }, medium: { border: "border-blue-500", label: "Media" }, low: { border: "border-emerald-500", label: "Baja" } }; return map[p] || map.low; }
         async function uploadFile(file, folder) { const fileName = `${folder}/${Date.now()}_${file.name || 'file'}`; const storageRef = ref(storage, fileName); const snap = await uploadBytes(storageRef, file); return await getDownloadURL(snap.ref); }
 
-        window.delItem = async (collName, id, isShared = false) => { if(!confirm("¿Eliminar?")) return; const path = isShared ? Data.getSharedPath() : [...Data.getBranchPath(), collName]; try { await deleteDoc(doc(db, ...path, id)); UI.toast("Eliminado"); } catch(e) { UI.toast("Error", "error"); } };
+        window.delItem = async (collName, id, isShared = false) => { 
+            if(!confirm("¿Eliminar?")) return; 
+            // Lógica actualizada para manejar diferentes colecciones compartidas
+            let path;
+            if (isShared) {
+                path = Data.getSharedPath(collName); // Pasa el nombre de la colección ('procedures' o 'deliveries')
+            } else {
+                path = [...Data.getBranchPath(), collName];
+            }
+            try { await deleteDoc(doc(db, ...path, id)); UI.toast("Eliminado"); } catch(e) { UI.toast("Error", "error"); console.log(e); } 
+        };
         window.toggleTaskDay = async (id, currentVal) => { try { await updateDoc(doc(db, ...Data.getBranchPath(), 'tasks', id), { checkedDay: !currentVal }); } catch(e) { UI.toast("Error", "error"); } };
-        window.toggleDel = async (id, status) => { try { await updateDoc(doc(db, ...Data.getSharedPath(), id), { status: status === 'pending' ? 'delivered' : 'pending' }); } catch(e) { UI.toast("Error", "error"); } };
+        window.toggleDel = async (id, status) => { try { await updateDoc(doc(db, ...Data.getSharedPath('deliveries'), id), { status: status === 'pending' ? 'delivered' : 'pending' }); } catch(e) { UI.toast("Error", "error"); } };
         window.clearImage = () => { document.getElementById('chatImageInput').value = ''; document.getElementById('imagePreviewContainer').classList.add('hidden'); };
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -538,25 +516,13 @@
             document.querySelector('[data-prio="low"]').click();
 
             document.getElementById('saveTaskBtn').addEventListener('click', async () => { const text = document.getElementById('taskInput').value.trim(); if(!text) return UI.toast("Escribe algo...", "error"); UI.closeModal(); await addDoc(collection(db, ...Data.getBranchPath(), 'tasks'), { text, assignee: document.getElementById('taskAssignee').value.trim(), isCyclic: document.getElementById('taskCyclic').checked, priority: State.priority, checkedDay: false, checkedTotal: false, createdAt: serverTimestamp() }); document.getElementById('taskInput').value = ''; });
-            document.getElementById('saveDelBtn').addEventListener('click', async () => { const client = document.getElementById('delClient').value; const items = document.getElementById('delItems').value; if(!client || !items) return UI.toast("Faltan datos", "error"); UI.closeModal(); await addDoc(collection(db, ...Data.getSharedPath()), { client, phone: document.getElementById('delPhone').value, items, when: document.getElementById('delWhen').value, where: document.getElementById('delWhere').value, status: 'pending', createdAt: serverTimestamp() }); document.getElementById('delClient').value = ''; document.getElementById('delItems').value = ''; });
+            document.getElementById('saveDelBtn').addEventListener('click', async () => { const client = document.getElementById('delClient').value; const items = document.getElementById('delItems').value; if(!client || !items) return UI.toast("Faltan datos", "error"); UI.closeModal(); await addDoc(collection(db, ...Data.getSharedPath('deliveries')), { client, phone: document.getElementById('delPhone').value, items, when: document.getElementById('delWhen').value, where: document.getElementById('delWhere').value, status: 'pending', createdAt: serverTimestamp() }); document.getElementById('delClient').value = ''; document.getElementById('delItems').value = ''; });
             document.getElementById('saveNoteBtn').addEventListener('click', async () => { const content = document.getElementById('noteContent').value.trim(); if(!content) return; UI.closeModal(); await addDoc(collection(db, ...Data.getBranchPath(), 'notes'), { content, type: document.getElementById('noteType').value, createdAt: serverTimestamp() }); document.getElementById('noteContent').value = ''; });
             
-            // --- NUEVO GUARDAR PROCEDIMIENTOS ---
             document.getElementById('saveProcBtn').addEventListener('click', async () => {
-                const title = document.getElementById('procTitle').value.trim();
-                const steps = document.getElementById('procSteps').value.trim();
-                const color = document.querySelector('input[name="procColor"]:checked').value;
-                
-                if(!title || !steps) return UI.toast("Faltan datos", "error");
-                UI.closeModal();
-                try {
-                    await addDoc(collection(db, ...Data.getBranchPath(), 'procedures'), {
-                        title, steps, color, createdAt: serverTimestamp()
-                    });
-                    document.getElementById('procTitle').value = '';
-                    document.getElementById('procSteps').value = '';
-                    UI.toast("Procedimiento guardado", "success");
-                } catch(e) { UI.toast("Error al guardar", "error"); }
+                const title = document.getElementById('procTitle').value.trim(); const steps = document.getElementById('procSteps').value.trim(); const color = document.querySelector('input[name="procColor"]:checked').value;
+                if(!title || !steps) return UI.toast("Faltan datos", "error"); UI.closeModal();
+                try { await addDoc(collection(db, ...Data.getSharedPath('procedures')), { title, steps, color, createdAt: serverTimestamp() }); document.getElementById('procTitle').value = ''; document.getElementById('procSteps').value = ''; UI.toast("Procedimiento guardado", "success"); } catch(e) { UI.toast("Error al guardar", "error"); }
             });
 
             document.getElementById('chatTextInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') document.getElementById('sendMsgBtn').click(); });
@@ -564,10 +530,8 @@
             document.getElementById('sendMsgBtn').addEventListener('click', async () => { const input = document.getElementById('chatTextInput'); const text = input.value.trim(); if(!text) return; input.value = ''; document.getElementById('sendMsgBtn').classList.add('hidden'); await addDoc(collection(db, ...Data.getBranchPath(), 'chat'), { type: 'text', text, sender: State.user.uid, createdAt: serverTimestamp() }); });
             
             document.getElementById('chatImageInput').addEventListener('change', async (e) => { 
-                const file = e.target.files[0]; if(!file) return; 
-                UI.toast("Subiendo imagen..."); 
-                try { const url = await uploadFile(file, 'images'); await addDoc(collection(db, ...Data.getBranchPath(), 'chat'), { type: 'image', url, sender: State.user.uid, createdAt: serverTimestamp() }); UI.toast("Imagen enviada", "success"); } 
-                catch(e) { UI.toast("Error subiendo", "error"); console.error(e); } e.target.value = '';
+                const file = e.target.files[0]; if(!file) return; UI.toast("Subiendo imagen..."); 
+                try { const url = await uploadFile(file, 'images'); await addDoc(collection(db, ...Data.getBranchPath(), 'chat'), { type: 'image', url, sender: State.user.uid, createdAt: serverTimestamp() }); UI.toast("Imagen enviada", "success"); } catch(e) { UI.toast("Error subiendo", "error"); console.error(e); } e.target.value = '';
             });
 
             const micBtn = document.getElementById('micBtn');
@@ -610,6 +574,13 @@
                     } catch (err) { UI.toast("Error WakeLock", "error"); }
                 } else { UI.toast("Navegador no compatible", "error"); }
             });
+            
+            // DUMMY SERVICE WORKER PARA INSTALACIÓN PWA
+            if ('serviceWorker' in navigator) {
+                const swContent = "self.addEventListener('fetch', e => {});";
+                const swBlob = new Blob([swContent], {type: 'text/javascript'});
+                navigator.serviceWorker.register(URL.createObjectURL(swBlob));
+            }
         });
     </script>
 </body>
