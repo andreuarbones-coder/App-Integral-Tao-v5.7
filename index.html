@@ -153,10 +153,12 @@
             <p class="text-slate-400 text-sm mt-2 max-w-xs">Módulo en desarrollo.</p>
         </div>
 
-        <!-- Vista: Chat/Radio (ARREGLADO: Estructura Flex Vertical) -->
-        <div id="view-chat" class="view-section hidden h-full flex flex-col bg-slate-100">
+        <!-- Vista: Chat/Radio (ARREGLADO: Flex Grow Agregado) -->
+        <!-- Se agregó 'flex-grow w-full' para asegurar que ocupe toda la altura -->
+        <div id="view-chat" class="view-section hidden flex-grow w-full h-full flex flex-col bg-slate-100">
             <!-- Lista de mensajes: ocupa todo el espacio disponible (flex-grow) -->
-            <div id="chatList" class="flex-grow overflow-y-auto p-4 space-y-2 flex flex-col"></div>
+            <!-- Se agregó 'min-h-0' para manejo correcto del scroll en flex anidado -->
+            <div id="chatList" class="flex-grow min-h-0 overflow-y-auto p-4 space-y-2 flex flex-col"></div>
             
             <!-- Barra de entrada: tamaño fijo, siempre al fondo (flex-none) -->
             <div class="flex-none bg-white border-t border-slate-200 p-3 pb-[max(12px,env(safe-area-inset-bottom))] z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
