@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Jardín OS v6.5</title>
+    <title>Jardín OS v7.0</title>
     
     <!-- Meta Tags PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -82,6 +82,9 @@
             box-shadow: 0 0 20px rgba(239, 68, 68, 0.6) !important;
         }
 
+        /* Estilos para checks de colores en modal */
+        .color-radio:checked + div { ring-width: 2px; ring-offset-width: 2px; transform: scale(1.1); }
+
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 100; width: 90%; max-width: 350px; pointer-events: none; }
         .toast { background: rgba(30, 41, 59, 0.95); color: white; padding: 12px 16px; border-radius: 50px; margin-bottom: 8px; font-size: 0.9rem; text-align: center; backdrop-filter: blur(4px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); animation: fade-in-down 0.3s ease-out; pointer-events: auto; display: flex; align-items: center; justify-content: center; gap: 8px; }
         @keyframes fade-in-down { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
@@ -120,6 +123,7 @@
                     <span id="deliveryBadge" class="hidden absolute top-0 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border border-white"></span>
                 </button>
                 <button data-view="notes" class="nav-tab flex-1 pb-2 text-center tab-inactive min-w-[70px] transition-all">Notas</button>
+                <button data-view="procedures" class="nav-tab flex-1 pb-2 text-center tab-inactive min-w-[70px] transition-all">Procesos</button>
                 <button data-view="stock" class="nav-tab flex-1 pb-2 text-center tab-inactive min-w-[70px] transition-all">Stock</button>
                 <button data-view="chat" class="nav-tab flex-1 pb-2 text-center tab-inactive min-w-[70px] transition-all flex items-center justify-center gap-1">
                     <i class="fas fa-microphone-alt"></i> Radio
@@ -152,6 +156,13 @@
         <!-- Vista: Notas -->
         <div id="view-notes" class="view-section hidden flex-grow h-full overflow-y-auto p-4 pb-24">
             <div id="notesList" class="grid gap-4"></div>
+        </div>
+
+        <!-- Vista: Procedimientos (NUEVA v7.0) -->
+        <div id="view-procedures" class="view-section hidden flex-grow h-full overflow-y-auto p-4 pb-24">
+            <div id="proceduresList" class="space-y-4">
+                <!-- Se llenará dinámicamente -->
+            </div>
         </div>
 
         <!-- Vista: Stock -->
@@ -217,6 +228,7 @@
 
     <!-- === MODALS === -->
     <div id="modalOverlay" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        
         <!-- Modal Tarea -->
         <div id="modal-tasks" class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden hidden scale-95 transition-transform duration-300">
             <div class="p-5">
@@ -243,6 +255,7 @@
                 <div class="flex gap-3 mt-6"><button class="modal-close flex-1 py-3 text-slate-500 bg-slate-100 rounded-xl font-medium">Cancelar</button><button id="saveTaskBtn" class="flex-1 py-3 text-white rounded-xl shadow-lg font-bold transition-transform active:scale-95" style="background-color: var(--primary);">Guardar</button></div>
             </div>
         </div>
+
         <!-- Modal Reparto -->
         <div id="modal-delivery" class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden hidden scale-95 transition-transform duration-300">
             <div class="p-5">
@@ -256,6 +269,7 @@
                 <div class="flex gap-3 mt-6"><button class="modal-close flex-1 py-3 text-slate-500 bg-slate-100 rounded-xl font-medium">Cancelar</button><button id="saveDelBtn" class="flex-1 py-3 text-white rounded-xl shadow-lg font-bold transition-transform active:scale-95" style="background-color: var(--primary);">Agendar</button></div>
             </div>
         </div>
+
         <!-- Modal Nota -->
         <div id="modal-notes" class="bg-yellow-50 w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden hidden border-2 border-yellow-200 scale-95 transition-transform duration-300">
             <div class="p-5">
@@ -265,6 +279,49 @@
                 <div class="flex justify-end gap-3 mt-4"><button class="modal-close text-yellow-700/60 font-bold px-4 hover:text-yellow-800">Cancelar</button><button id="saveNoteBtn" class="bg-yellow-400 text-yellow-900 px-6 py-2 rounded-lg font-bold shadow-md active:scale-95 transition-transform">Pegar</button></div>
             </div>
         </div>
+
+        <!-- Modal Procedimiento (NUEVO) -->
+        <div id="modal-procedures" class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden hidden scale-95 transition-transform duration-300">
+            <div class="p-5">
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2" style="color: var(--primary);"><i class="fas fa-book"></i> Nuevo Procedimiento</h2>
+                <div class="space-y-4">
+                    <input type="text" id="procTitle" class="w-full p-3 bg-slate-50 rounded-lg border border-slate-200 outline-none font-bold" placeholder="Título (ej: Protocolo de Riego)">
+                    
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase mb-2 block">Etiqueta de Color</label>
+                        <div class="flex justify-between px-2">
+                            <label class="cursor-pointer relative">
+                                <input type="radio" name="procColor" value="blue" class="color-radio sr-only" checked>
+                                <div class="w-8 h-8 rounded-full bg-blue-500 border-2 border-transparent transition-all ring-blue-300"></div>
+                            </label>
+                            <label class="cursor-pointer relative">
+                                <input type="radio" name="procColor" value="green" class="color-radio sr-only">
+                                <div class="w-8 h-8 rounded-full bg-emerald-500 border-2 border-transparent transition-all ring-emerald-300"></div>
+                            </label>
+                            <label class="cursor-pointer relative">
+                                <input type="radio" name="procColor" value="red" class="color-radio sr-only">
+                                <div class="w-8 h-8 rounded-full bg-red-500 border-2 border-transparent transition-all ring-red-300"></div>
+                            </label>
+                            <label class="cursor-pointer relative">
+                                <input type="radio" name="procColor" value="orange" class="color-radio sr-only">
+                                <div class="w-8 h-8 rounded-full bg-orange-400 border-2 border-transparent transition-all ring-orange-200"></div>
+                            </label>
+                            <label class="cursor-pointer relative">
+                                <input type="radio" name="procColor" value="purple" class="color-radio sr-only">
+                                <div class="w-8 h-8 rounded-full bg-purple-500 border-2 border-transparent transition-all ring-purple-300"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase mb-1 block">Pasos (Un punto por línea)</label>
+                        <textarea id="procSteps" class="w-full p-3 bg-slate-50 rounded-lg border border-slate-200 outline-none h-32 resize-none text-sm leading-relaxed" placeholder="- Paso 1&#10;- Paso 2&#10;- Paso 3..."></textarea>
+                    </div>
+                </div>
+                <div class="flex gap-3 mt-6"><button class="modal-close flex-1 py-3 text-slate-500 bg-slate-100 rounded-xl font-medium">Cancelar</button><button id="saveProcBtn" class="flex-1 py-3 text-white rounded-xl shadow-lg font-bold transition-transform active:scale-95" style="background-color: var(--primary);">Guardar</button></div>
+            </div>
+        </div>
+
     </div>
 
     <!-- === LOGIC === -->
@@ -300,7 +357,7 @@
             listeners: {} 
         };
 
-        const VIEWS_ORDER = ['tasks', 'delivery', 'notes', 'stock', 'chat'];
+        const VIEWS_ORDER = ['tasks', 'delivery', 'notes', 'procedures', 'stock', 'chat'];
 
         const UI = {
             toast(msg, type = 'info') {
@@ -336,8 +393,6 @@
 
         const Data = {
             getBranchPath() { return ['artifacts', PREVIEW_APP_ID, 'branches', State.branch]; },
-            // --- CORRECCIÓN CRÍTICA DE RUTA PARA REPARTOS ---
-            // Antes fallaba por tener número par de segmentos. Ahora es una colección directa válida.
             getSharedPath() { return ['artifacts', PREVIEW_APP_ID, 'repartos_globales']; },
 
             subscribeAll() {
@@ -358,25 +413,21 @@
                     });
                 });
                 
-                // Listener Repartos Corregido
                 State.listeners.deliveries = onSnapshot(collection(db, ...sharedPath), (snap) => {
                     const list = document.getElementById('deliveryList'); list.innerHTML = '';
                     const deliveries = []; snap.forEach(d => deliveries.push({id: d.id, ...d.data()}));
                     deliveries.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-                    
-                    // Badge Logic
                     const pendingCount = deliveries.filter(d => d.status === 'pending').length;
                     const badge = document.getElementById('deliveryBadge');
                     if(pendingCount > 0) { badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
-
                     if(deliveries.length === 0) { list.innerHTML = `<div class="text-center p-8 opacity-40"><i class="fas fa-truck text-4xl mb-2"></i><br>Sin repartos</div>`; return; }
                     deliveries.forEach(d => {
-                        const isDelivered = d.status === 'delivered';
-                        const el = document.createElement('div'); el.className = `bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden ${isDelivered ? 'opacity-60 bg-slate-50' : ''}`;
+                        const isDelivered = d.status === 'delivered'; const el = document.createElement('div'); el.className = `bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden ${isDelivered ? 'opacity-60 bg-slate-50' : ''}`;
                         el.innerHTML = `<div class="p-4"><div class="flex justify-between items-start mb-3"><div><h3 class="font-bold text-slate-800 text-lg leading-none">${d.client}</h3><a href="tel:${d.phone}" class="text-emerald-600 text-sm font-bold flex items-center gap-1 mt-1 hover:underline"><i class="fas fa-phone-alt"></i> ${d.phone}</a></div><button onclick="window.toggleDel('${d.id}', '${d.status}')" class="px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase border ${isDelivered ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}">${isDelivered ? 'Entregado' : 'Pendiente'}</button></div><div class="bg-amber-50 p-3 rounded-lg text-sm text-slate-700 italic border border-amber-100 mb-3 relative"><i class="fas fa-quote-left absolute -top-2 -left-1 text-amber-200 text-xl"></i><span class="relative z-10">${d.items}</span></div><div class="flex items-center gap-4 text-xs text-slate-500"><span class="flex items-center gap-1"><i class="far fa-clock"></i> ${d.when}</span><a href="https://maps.google.com/?q=${d.where}" target="_blank" class="flex items-center gap-1 text-blue-500 hover:underline"><i class="fas fa-map-marker-alt"></i> ${d.where}</a></div></div><div class="bg-slate-50 px-4 py-2 border-t border-slate-100 flex justify-end"><button onclick="window.delItem('deliveries','${d.id}', true)" class="text-xs text-red-400 hover:text-red-600 font-bold flex items-center gap-1"><i class="fas fa-trash"></i> ELIMINAR</button></div>`;
                         list.appendChild(el);
                     });
                 });
+
                 State.listeners.notes = onSnapshot(collection(db, ...basePath, 'notes'), (snap) => {
                     const list = document.getElementById('notesList'); list.innerHTML = '';
                     const notes = []; snap.forEach(d => notes.push({id: d.id, ...d.data()}));
@@ -387,6 +438,41 @@
                         list.appendChild(el);
                     });
                 });
+
+                // Listener de Procedimientos (NUEVO v7.0)
+                State.listeners.procedures = onSnapshot(collection(db, ...basePath, 'procedures'), (snap) => {
+                    const list = document.getElementById('proceduresList'); list.innerHTML = '';
+                    const procs = []; snap.forEach(d => procs.push({id: d.id, ...d.data()}));
+                    procs.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+                    if(procs.length === 0) { list.innerHTML = `<div class="text-center p-8 opacity-40"><i class="fas fa-book text-4xl mb-2"></i><br>Sin procedimientos</div>`; return; }
+
+                    const colors = {
+                        blue: { bg: 'bg-blue-50', border: 'border-blue-200', title: 'text-blue-800', badge: 'bg-blue-100 text-blue-700' },
+                        green: { bg: 'bg-emerald-50', border: 'border-emerald-200', title: 'text-emerald-800', badge: 'bg-emerald-100 text-emerald-700' },
+                        red: { bg: 'bg-red-50', border: 'border-red-200', title: 'text-red-800', badge: 'bg-red-100 text-red-700' },
+                        orange: { bg: 'bg-orange-50', border: 'border-orange-200', title: 'text-orange-800', badge: 'bg-orange-100 text-orange-700' },
+                        purple: { bg: 'bg-purple-50', border: 'border-purple-200', title: 'text-purple-800', badge: 'bg-purple-100 text-purple-700' }
+                    };
+
+                    procs.forEach(p => {
+                        const theme = colors[p.color] || colors.blue;
+                        // Transformar texto en items de lista
+                        const stepsHtml = p.steps.split('\n').map(s => s.trim()).filter(s => s).map(s => `<li class="flex items-start gap-2 mb-1"><span class="mt-1.5 w-1.5 h-1.5 rounded-full ${theme.title.replace('text','bg')} flex-shrink-0"></span><span>${s.replace(/^- /, '')}</span></li>`).join('');
+                        
+                        const el = document.createElement('div');
+                        el.className = `${theme.bg} rounded-xl shadow-sm border ${theme.border} p-5 relative`;
+                        el.innerHTML = `
+                            <h3 class="font-bold text-lg mb-3 ${theme.title} flex items-center gap-2"><i class="fas fa-clipboard-list opacity-50"></i> ${p.title}</h3>
+                            <ul class="text-sm text-slate-700 leading-relaxed">${stepsHtml}</ul>
+                            <div class="absolute top-4 right-4 flex gap-2">
+                                <button onclick="window.delItem('procedures','${p.id}')" class="w-8 h-8 rounded-full bg-white/50 hover:bg-red-500 hover:text-white text-slate-400 flex items-center justify-center transition-colors"><i class="fas fa-trash-alt text-xs"></i></button>
+                            </div>
+                        `;
+                        list.appendChild(el);
+                    });
+                });
+
                 State.listeners.chat = onSnapshot(collection(db, ...basePath, 'chat'), (snap) => {
                     const container = document.getElementById('chatList');
                     const msgs = []; snap.forEach(doc => msgs.push({ ...doc.data(), id: doc.id }));
@@ -434,7 +520,12 @@
 
             document.querySelectorAll('.nav-tab').forEach(btn => btn.addEventListener('click', () => UI.switchView(btn.dataset.view)));
             document.getElementById('branchBtn').addEventListener('click', () => { State.branch = State.branch === 'centro' ? 'ejemplares' : 'centro'; localStorage.setItem('tao_branch', State.branch); UI.setTheme(State.branch); Data.subscribeAll(); UI.toast(`Cambiado a ${State.branch === 'centro' ? 'Centro' : 'Ejemplares'}`); });
-            document.getElementById('mainFab').addEventListener('click', () => { if (State.view === 'tasks') UI.openModal('modal-tasks'); else if (State.view === 'delivery') UI.openModal('modal-delivery'); else if (State.view === 'notes') UI.openModal('modal-notes'); });
+            document.getElementById('mainFab').addEventListener('click', () => { 
+                if (State.view === 'tasks') UI.openModal('modal-tasks'); 
+                else if (State.view === 'delivery') UI.openModal('modal-delivery'); 
+                else if (State.view === 'notes') UI.openModal('modal-notes');
+                else if (State.view === 'procedures') UI.openModal('modal-procedures');
+            });
             document.querySelectorAll('.modal-close').forEach(btn => btn.addEventListener('click', UI.closeModal));
             document.getElementById('modalOverlay').addEventListener('click', (e) => { if(e.target === document.getElementById('modalOverlay')) UI.closeModal(); });
 
@@ -444,6 +535,24 @@
             document.getElementById('saveTaskBtn').addEventListener('click', async () => { const text = document.getElementById('taskInput').value.trim(); if(!text) return UI.toast("Escribe algo...", "error"); UI.closeModal(); await addDoc(collection(db, ...Data.getBranchPath(), 'tasks'), { text, assignee: document.getElementById('taskAssignee').value.trim(), isCyclic: document.getElementById('taskCyclic').checked, priority: State.priority, checkedDay: false, checkedTotal: false, createdAt: serverTimestamp() }); document.getElementById('taskInput').value = ''; });
             document.getElementById('saveDelBtn').addEventListener('click', async () => { const client = document.getElementById('delClient').value; const items = document.getElementById('delItems').value; if(!client || !items) return UI.toast("Faltan datos", "error"); UI.closeModal(); await addDoc(collection(db, ...Data.getSharedPath()), { client, phone: document.getElementById('delPhone').value, items, when: document.getElementById('delWhen').value, where: document.getElementById('delWhere').value, status: 'pending', createdAt: serverTimestamp() }); document.getElementById('delClient').value = ''; document.getElementById('delItems').value = ''; });
             document.getElementById('saveNoteBtn').addEventListener('click', async () => { const content = document.getElementById('noteContent').value.trim(); if(!content) return; UI.closeModal(); await addDoc(collection(db, ...Data.getBranchPath(), 'notes'), { content, type: document.getElementById('noteType').value, createdAt: serverTimestamp() }); document.getElementById('noteContent').value = ''; });
+            
+            // --- NUEVO GUARDAR PROCEDIMIENTOS ---
+            document.getElementById('saveProcBtn').addEventListener('click', async () => {
+                const title = document.getElementById('procTitle').value.trim();
+                const steps = document.getElementById('procSteps').value.trim();
+                const color = document.querySelector('input[name="procColor"]:checked').value;
+                
+                if(!title || !steps) return UI.toast("Faltan datos", "error");
+                UI.closeModal();
+                try {
+                    await addDoc(collection(db, ...Data.getBranchPath(), 'procedures'), {
+                        title, steps, color, createdAt: serverTimestamp()
+                    });
+                    document.getElementById('procTitle').value = '';
+                    document.getElementById('procSteps').value = '';
+                    UI.toast("Procedimiento guardado", "success");
+                } catch(e) { UI.toast("Error al guardar", "error"); }
+            });
 
             document.getElementById('chatTextInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') document.getElementById('sendMsgBtn').click(); });
             document.getElementById('chatTextInput').addEventListener('input', (e) => { const btn = document.getElementById('sendMsgBtn'); if(e.target.value.trim()) btn.classList.remove('hidden'); else btn.classList.add('hidden'); });
